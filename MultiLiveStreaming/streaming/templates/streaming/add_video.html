@@ -1,0 +1,36 @@
+{% extends 'streaming/base.html' %}
+
+{% block title %}Tambah Video{% endblock %}
+
+{% block content %}
+<h2>Tambahkan Video dari Google Drive </h2>
+<form method="post" onsubmit="showLoading()">
+    {% csrf_token %}
+    <div class="mb-3">
+        <label for="drive_link" class="form-label">Link Google Drive</label>
+        <input type="url" id="drive_link" name="drive_link" class="form-control" required>
+    </div>
+    <button type="submit" class="btn btn-primary">Tambah Video</button>
+    <div id="loading-spinner" style="display: none;">
+        <div class="spinner-border text-primary" role="status">
+            <span class="sr-only">Loading...</span>
+        </div>
+    </div>
+    <div id="success-message" style="display: none;">
+        <div class="alert alert-success" role="alert">
+            Video berhasil ditambahkan!
+        </div>
+    </div>
+</form>
+<script>
+    function showLoading() {
+        document.getElementById('loading-spinner').style.display = 'block';
+        document.getElementById('success-message').style.display = 'none';
+    }
+    function showSuccessMessage() {
+        document.getElementById('loading-spinner').style.display = 'none';
+        document.getElementById('success-message').style.display = 'block';
+    }
+    // Assuming there's a way to call showSuccessMessage() after the form submission is successful
+</script>
+{% endblock %}

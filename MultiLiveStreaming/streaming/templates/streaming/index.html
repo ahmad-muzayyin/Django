@@ -1,0 +1,12 @@
+{% extends 'streaming/base.html' %}
+
+{% block title %}Dashboard - Multi Live Streaming{% endblock %}
+
+{% block content %}
+<div class="text-center">
+    <h1>Dashboard Multi Live Streaming</h1>
+    <p>Kelola dan jalankan live streaming dengan mudah!</p>
+    <a href="{% url 'add_video' %}" class="btn btn-primary">Tambahkan Video</a>
+    <a href="{% url 'live_list' %}" class="btn btn-success">Lihat Live Streaming</a>
+</div>
+{% endblock %}

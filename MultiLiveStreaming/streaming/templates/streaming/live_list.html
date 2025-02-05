@@ -1,0 +1,33 @@
+{% extends 'streaming/base.html' %}
+
+{% block title %}Daftar Live Streaming{% endblock %}
+
+{% block content %}
+<h2>Live Streaming yang Sedang Berjalan</h2>
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>No</th>
+            <th>Nama Video</th>
+            <th>Status</th>
+            <th>Aksi</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for live in live_streams %}
+        <tr>
+            <td>{{ forloop.counter }}</td>
+            <td>{{ live.video_name }}</td>
+            <td><span class="badge bg-success">Live</span></td>
+            <td>
+                <a href="{% url 'stop_live' live.id %}" class="btn btn-danger">Hentikan</a>
+            </td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="4" class="text-center">Belum ada live streaming yang berjalan.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

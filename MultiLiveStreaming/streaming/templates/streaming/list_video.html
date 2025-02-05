@@ -1,0 +1,210 @@
+{% extends 'streaming/base.html' %}
+
+{% block title %}Daftar Video Streaming{% endblock %}
+
+{% block content %}
+<h2 class="text-center my-4">DAFTAR VIDEO STREAMING YANG ANDA BUAT</h2>
+<div class="row">
+    <div class="col-md-10 mb-4">
+        <select class="form-select" id="videoFilter" aria-label="Filter videos">
+            <option value="all" selected>All videos</option>
+            <option value="Ongoing">Live videos</option>
+            <option value="Dijadwalkan">Scheduled videos</option>
+            <option value="Dihentikan">Completed videos</option>
+        </select>
+    </div>
+    <div class="col-md-2 mb-4">
+        <a href="{% url 'add_video' %}" class="btn btn-primary">Tambah Video Baru</a>
+    </div>
+    {% for video in videos %}
+    <div class="col-md-4 mb-4 video-item"
+        data-status="{% if video.livestreamingschedule %}{{ video.livestreamingschedule.status }}{% else %}none{% endif %}">
+        <div class="card shadow-sm rounded">
+            <div class="card-body">
+                <h5 class="card-title">{{ video.file_name }}</h5>
+                <table class="table table-sm">
+                    <tbody>
+                        <tr>
+                            <th scope="row">Preview Video:</th>
+                            <td>
+                                <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal"
+                                    data-bs-target="#previewModal{{ video.id }}">Preview</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Ukuran Video:</th>
+                            <td>{{ video.size_video }} KB</td>
+                        </tr>
+                        {% if video.livestreamingschedule %}
+                        <tr>
+                            <th scope="row">Status Streaming:</th>
+                            <td>
+                                <span class="badge bg-success">{{ video.livestreamingschedule.status }}</span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Kunci Streaming:</th>
+                            <td>
+                                <span class="badge bg-info">{{ video.livestreamingschedule.streaming_key }}</span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Mulai Streaming:</th>
+                            <td>{{ video.livestreamingschedule.start_time|date:"F j, Y g:i A" }}</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Akhir Streaming:</th>
+                            <td>{{ video.livestreamingschedule.end_time|date:"F j, Y g:i A" }}</td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <th scope="row">Status Streaming:</th>
+                            <td class="text-muted">Belum ada jadwal live streaming.</td>
+                        </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+
+                <!-- Modal Edit Video -->
+                <div class="modal fade" id="editModal{{ video.id }}" tabindex="-1"
+                    aria-labelledby="editModalLabel{{ video.id }}" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="editModalLabel{{ video.id }}">Edit Nama Video: {{
+                                    video.file_name }}
+                                </h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                    aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <form method="POST" action="{% url 'edit_video' video.id %}">
+                                    {% csrf_token %}
+                                    <div class="mb-3">
+                                        <label for="videoName{{ video.id }}" class="form-label">Nama Video</label>
+                                        <input type="text" class="form-control" id="videoName{{ video.id }}"
+                                            name="file_name" value="{{ video.file_name }}">
+                                    </div>
+                                    <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
+                                </form>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Modal Edit Jadwal Streaming -->
+                <div class="modal fade" id="editScheduleModal{{ video.id }}" tabindex="-1"
+                    aria-labelledby="editScheduleModalLabel{{ video.id }}" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="editScheduleModalLabel{{ video.id }}">Edit Jadwal Streaming
+                                    untuk {{
+                                    video.file_name }}</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                    aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <form method="POST" action="{% if video.livestreamingschedule.id %}{% url 'edit_schedule' video.livestreamingschedule.id %}{% else %}#{% endif %}">
+                                    {% csrf_token %}
+                                    <div class="mb-3">
+                                        <label for="streamingKey{{ video.id }}" class="form-label">Streaming Key</label>
+                                        <input type="text" class="form-control" id="streamingKey{{ video.id }}"
+                                            name="streaming_key"
+                                            value="{{ video.livestreamingschedule.streaming_key }}">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="startStreaming{{ video.id }}" class="form-label">Mulai
+                                            Streaming</label>
+                                        <input type="datetime-local" class="form-control"
+                                            id="startStreaming{{ video.id }}" name="start_streaming"
+                                            value="{{ video.livestreamingschedule.start_time|date:'Y-m-dTH:i:s' }}">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="endStreaming{{ video.id }}" class="form-label">Akhir
+                                            Streaming</label>
+                                        <input type="datetime-local" class="form-control"
+                                            id="endStreaming{{ video.id }}" name="end_streaming"
+                                            value="{{ video.livestreamingschedule.end_time|date:'Y-m-dTH:i:s' }}">
+                                    </div>
+                                    <button type="submit" class="btn btn-success">Simpan Perubahan</button>
+                                </form>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Modal Live Streaming -->
+                <div class="modal fade" id="liveModal{{ video.id }}" tabindex="-1"
+                    aria-labelledby="liveModalLabel{{ video.id }}" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="liveModalLabel{{ video.id }}">Pengaturan Live Streaming
+                                    untuk {{
+                                    video.file_name }}</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                    aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <form method="POST" action="{% url 'start_live' video.id %}">
+                                    {% csrf_token %}
+                                    <div class="mb-3">
+                                        <label for="streamingKey{{ video.id }}" class="form-label">Streaming Key</label>
+                                        <input type="text" class="form-control" id="streamingKey{{ video.id }}"
+                                            name="streaming_key" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="startStreaming{{ video.id }}" class="form-label">Mulai
+                                            Streaming</label>
+                                        <input type="datetime-local" class="form-control"
+                                            id="startStreaming{{ video.id }}" name="start_streaming">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="endStreaming{{ video.id }}" class="form-label">Akhir
+                                            Streaming</label>
+                                        <input type="datetime-local" class="form-control"
+                                            id="endStreaming{{ video.id }}" name="end_streaming">
+                                    </div>
+                                    <button type="submit" class="btn btn-success">Mulai Streaming</button>
+                                </form>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <hr>
+                <div class="d-flex justify-content-between">
+                    {% if video.livestreamingschedule and video.livestreamingschedule.status == "Ongoing" %}
+                    <a href="{% url 'stop_live' video.livestreamingschedule.id %}" class="btn btn-sm btn-danger">Stop
+                        Live</a>
+                    {% elif video.livestreamingschedule and video.livestreamingschedule.status == "Dijadwalkan" %}
+                    <button type="button" class="btn btn-sm btn-warning" data-bs-toggle="modal"
+                        data-bs-target="#editScheduleModal{{ video.id }}">Edit Jadwal</button>
+                    {% else %}
+                    <button type="button" class="btn btn-sm btn-warning" data-bs-toggle="modal"
+                        data-bs-target="#editModal{{ video.id }}">Edit Video</button>
+                    <a href="{% url 'delete_video' video.id %}" class="btn btn-sm btn-danger"
+                        onclick="return confirm('Apakah Anda yakin ingin menghapus video ini?');">Delete Video</a>
+                    <a href="#" class="btn btn-sm btn-success" data-bs-toggle="modal"
+                        data-bs-target="#liveModal{{ video.id }}">Live</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-md-12 text-center">
+        <p>Tidak ada video streaming tersedia saat ini.</p>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}
